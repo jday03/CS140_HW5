@@ -15,16 +15,25 @@ static int COARSENESS = 1000;
 static const int OCCUPIED_VALUE = 10;
 void genlife(int *a, unsigned int n)
 {
+    int nSquaredDivCoarseness = n*n/ COARSENESS;
 
+    cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
+        for(int count2 = 0; count2 < COARSENESS; ++count2 ){
 
+            for (int yCount = 0; ycount < n ; ycount ++) {
 
+                 a[n * ((count * COARSENESS) + count2) + yCount] = rand()%2;
+            }
+        }
 
+    }
 
 }
 
 //Read the life matrix from a file
 void readlife(int *a, unsigned int n, char *filename)
 {
+
 }
 
 //Life function
@@ -37,7 +46,7 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount)
     //setting neighbors array to Zero.
     cilk_for (int count = 0; count < nSquaredDivCoarseness; ++count){
         for(int count2 = 0; count2 < COARSENESS; ++count2) {
-            neighbors[count*n + count2] = 0;
+            neighbors[n * ((count * COARSENESS) + count2) + yCount] = 0;
         }
     }
 
