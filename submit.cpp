@@ -34,11 +34,12 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount)
     neighbors = (int *)malloc(sizeof(int)*(n*n));
     int nSquaredDivCoarseness = n*n/COARSENESS;
 
+    //setting neighbors array to Zero.
     cilk_for (int count = 0; count < nSquaredDivCoarseness; ++count){
         for(int count2 = 0; count2 < COARSENESS; ++count2) {
             neighbors[count*n + count2] = 0;
         }
-        }
+    }
 
 
 
@@ -46,6 +47,18 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount)
 
 
 
+    }
+
+    cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
+        for(int count2 = 0; count2 < COARSENESS; ++count2 ){
+
+            for (int yCount = 0; ycount < n ; ycount ++) {
+
+                if ( (a[n * ((count * COARSENESS) + count2) + yCount]) >= OCCUPIED_VALUE) {
+                    updateNeighborsAlive(neighbors, (count * COARSENESS) + count2, yCount, n);
+                }
+            }
+        }
     }
 
 
