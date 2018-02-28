@@ -31,8 +31,23 @@ void genlife(int *a, unsigned int n)
 }
 
 //Read the life matrix from a file
+
 void readlife(int *a, unsigned int n, char *filename)
 {
+    FILE * pFile;
+    pFile = fopen ("myfile.txt","r");
+
+    int nextItem = 0;
+
+for (int outerCounter = 0; outerCounter < n; ++outerCounter) {
+    for (int innerCounter = 0; innerCounter < n; ++innerCounter) {
+        fscanf(pFile, "%i", &nextItem);
+        a[innerCounter * n +outerCounter] = nextItem;
+    }
+}
+
+
+
 
 }
 
@@ -52,18 +67,14 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount)
 
 
 
-    cilk_for(int count= 0; count < n*n/COARSENESS; ++count){
 
-
-
-    }
 
     cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
         for(int count2 = 0; count2 < COARSENESS; ++count2 ){
 
             for (int yCount = 0; ycount < n ; ycount ++) {
 
-                if ( (a[n * ((count * COARSENESS) + count2) + yCount]) >= OCCUPIED_VALUE) {
+                if ( (a[n * ((count * COARSENESS) + count2) + yCount]) == 1) {
                     updateNeighborsAlive(neighbors, (count * COARSENESS) + count2, yCount, n);
                 }
             }
