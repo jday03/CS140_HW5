@@ -144,3 +144,44 @@ int* getCellPtr(int *a,int x, int y, int n){
     return a;
 
 }
+
+
+
+void updateNeighborsArray(int * neighbors, int n){
+    int nSquaredDivCoarseness = n*n/COARSENESS;
+    int nDivCoarseness = n/COARSENESS;
+
+    cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
+        for(int count2 = 0; count2 < COARSENESS; ++count2 ){
+
+            for (int yCount = 0; ycount < n ; ycount ++) {
+
+                int* value = neighbors[n * ((count * COARSENESS) + count2) + yCount];
+                if (*value >= OCCUPIED_VALUE){
+                    *value -= OCCUPIED_VALUE;
+
+                    if( *value ==2 || *value == 3){
+                        *value = 1;
+                    }
+                    else if(*value > 3 || *value < 2){
+                        *value = 0;
+
+                    }
+
+                } else{
+                    if (*value == 3){
+                        *value = 1;
+
+                } else {
+                        *value = 0;
+                    }
+
+                }
+
+            }
+
+        }
+    }
+
+
+}
