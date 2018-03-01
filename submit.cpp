@@ -55,34 +55,52 @@ for (int outerCounter = 0; outerCounter < n; ++outerCounter) {
 void life(int *a, unsigned int n, unsigned int iter, int *livecount)
 {
     int * a;
-    neighbors = (int *)malloc(sizeof(int)*(n*n));
+    int *neighbors = (int *)malloc(sizeof(int)*(n*n));
     int nSquaredDivCoarseness = n*n/COARSENESS;
 
-    //setting neighbors array to Zero.
-    cilk_for (int count = 0; count < nSquaredDivCoarseness; ++count){
-        for(int count2 = 0; count2 < COARSENESS; ++count2) {
-            neighbors[n * ((count * COARSENESS) + count2) + yCount] = 0;
+livecount = new int [10];
+    int spotInLiveCount = 0;
+
+    for(int iterCount = 0; iterCount < iter; ++iterCount) {
+        //setting neighbors array to Zero.
+        cilk_for(int
+        count = 0;
+        count < nSquaredDivCoarseness;
+        ++count){
+            for (int count2 = 0; count2 < COARSENESS; ++count2) {
+                neighbors[n * ((count * COARSENESS) + count2) + yCount] = 0;
+            }
         }
-    }
 
 
+        cilk_for(int
+        count = 0;
+        count < nSquaredDivCoarseness;
+        ++count){
+            for (int count2 = 0; count2 < COARSENESS; ++count2) {
 
+                for (int yCount = 0; ycount < n; ycount++) {
 
-
-    cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
-        for(int count2 = 0; count2 < COARSENESS; ++count2 ){
-
-            for (int yCount = 0; ycount < n ; ycount ++) {
-
-                if ( (a[n * ((count * COARSENESS) + count2) + yCount]) == 1) {
-                    updateNeighborsAlive(neighbors, (count * COARSENESS) + count2, yCount, n);
+                    if ((a[n * ((count * COARSENESS) + count2) + yCount]) == 1) {
+                        updateNeighborsAlive(neighbors, (count * COARSENESS) + count2, yCount, n);
+                    }
                 }
             }
         }
+
+        void updateNeighborsArray(neighbors, n);
+        delete a;
+        a = neighbors;
+        neighbors = (int *)malloc(sizeof(int)*(n*n));
+
+        #if DEBUG == 1
+        if(iterCount % (iter / 10)-1 == 0 && iterCount != 0 ){
+           livecount[spotInLiveCount]= countLiving(a);
+            ++spotInLiveCount;
+        }
+        #ENDIF
+
     }
-
-
-
     // You need to store the total number of livecounts for every 1/0th of the total iterations into the livecount array.
 	// For example, if there are 50 iterations in your code, you need to store the livecount for iteration number 5 10 15
 	// 20 ... 50. The countlive function is defined in life.cpp, which you can use. Note that you can
@@ -105,7 +123,16 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount)
 	//
 	//	}
 }
+int countLiving(int* array, int n){
+    int aliveCount = 0;
+    for(int count =0; count < n*n; ++count){
+        if(array[count] == 1){
+            aliveCount +=1;
+        }
 
+    }
+return aliveCount;
+}
 
 
 void updateNeighborsAlive(int *neighbors, int x, int y, int n){
