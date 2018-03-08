@@ -20,7 +20,6 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
 void addToCell(cilk::reducer< cilk::op_add<int> > a[], int x, int y, int n, int val);
 void setCell(cilk::reducer< cilk::op_add<int> > a[], int x, int y, int n, int val);
 cilk::reducer< cilk::op_add<int> >* getCellPtr(cilk::reducer< cilk::op_add<int> > a[],int x, int y, int n);
-int countLiving(int* array);
 
 
 void genlife(int *a, unsigned int n)
@@ -62,7 +61,7 @@ for (int outerCounter = 0; outerCounter < n; ++outerCounter) {
 //Life function
 void life(int *a, unsigned int n, unsigned int iter, int *livecount)
 {
-
+    int * newA = a;
     int nSquaredDivCoarseness = n*n/COARSENESS;
 
 livecount = new int [10];
@@ -79,12 +78,12 @@ livecount = new int [10];
 
         cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
             for (int count2 = 0; count2 < COARSENESS; ++count2) {
-
-                updateNeighborsAlive(neighbors, (count * COARSENESS) + count2/n,count2%n , n);
-
+                if(newA[((count * COARSENESS) + count2) ] == 1) {
+                    updateNeighborsAlive(neighbors, (count * COARSENESS) + count2 / n, count2 % n, n);
+                }
             }
         }
-        int * newA;
+
        newA = updateNeighborsArray(neighbors, n);
        // delete a;
 
@@ -93,8 +92,8 @@ livecount = new int [10];
 
 
         #if DEBUG == 1
-        if(iterCount % (iter / 10) == 0 && iterCount != 0 ){
-           livecount[spotInLiveCount]= countLiving(a);
+        if(iterCount % (iter / 10) == 0 && iterCount != 0 && spotInLiveCount < 10){
+           livecount[spotInLiveCount]= countlive(newA,n);
             ++spotInLiveCount;
         }
         #endif
@@ -122,20 +121,31 @@ livecount = new int [10];
 	//
 	//	}
 }
-int countLiving(int array[]){
-    int aliveCount = 0;
-    int n = sizeof(array)/ sizeof(array[0]);
-    std::cout<< n;
-    for(int count =0; count < n*n; ++count){
-        if(array[count] == 1){
-            aliveCount +=1;
+
+
+/*int countLiving(int* array, int n){
+
+    cilk::reducer< cilk::op_add<int> > aliveCount;
+    aliveCount.set_value(0);
+std::cout<< "START" << std::endl;
+    cilk_for(int count = 0; count < n*n/COARSENESS; ++count){
+        for (int count2 = 0; count2 < COARSENESS; ++count2) {
+            std::cout << count * COARSENESS + count2 << std::endl;
+            if(*(array + count * COARSENESS + count2)  == 1) {
+              //  *aliveCount += 1;
+            }
         }
-
     }
-    std::cout << aliveCount << std::endl;
-return aliveCount;
-}
 
+
+
+
+
+
+    std::cout << std::endl << aliveCount.get_value() << std::endl;
+return aliveCount.get_value();
+}
+*/
 
 void updateNeighborsAlive(cilk::reducer< cilk::op_add<int> > neighbors[], int x, int y, int n){
 
