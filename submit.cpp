@@ -12,7 +12,7 @@
 //Generate the life matrix any way you want. We would highly recommend that you print the generated
 //matrix into a file, so that you can share it with other teams for checking correctness.
 
-static int COARSENESS = 100;
+static int COARSENESS = 10;
 static const int OCCUPIED_VALUE = 10;
 
 void updateNeighborsAlive(cilk::reducer< cilk::op_add<int> > neighbors[], int x, int y, int n);
@@ -32,7 +32,7 @@ void genlife(int *a, unsigned int n)
         for(int count2 = 0; count2 < COARSENESS; ++count2 ){
 
                 std::cout << count * COARSENESS + count2 << std::endl;
-                a[((count * COARSENESS) + count2)] = rand() % 2;
+             a[((count * COARSENESS) + count2)] = rand() % 2;
 
         }
 
@@ -46,7 +46,7 @@ void genlife(int *a, unsigned int n)
 void readlife(int *a, unsigned int n, char *filename)
 {
     FILE * pFile;
-    pFile = fopen ("myfile.txt","r");
+    pFile = fopen (filename,"r");
 
     int nextItem = 0;
 
@@ -76,10 +76,10 @@ livecount = new int [10];
         //setting neighbors array to Zero.
         cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
             for (int count2 = 0; count2 < COARSENESS; ++count2) {
-                (neighbors[n * ((count * COARSENESS) + count2) /*+ yCount*/]).set_value(0);
+                (neighbors[((count * COARSENESS) + count2) ]).set_value(0);
             }
         }
-
+/*
         cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
             for (int count2 = 0; count2 < COARSENESS; ++count2) {
 
@@ -98,7 +98,7 @@ livecount = new int [10];
 
 
 
-
+*/
         #if DEBUG == 1
         if(iterCount % (iter / 10)-1 == 0 && iterCount != 0 ){
            livecount[spotInLiveCount]= countLiving(a);
