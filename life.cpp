@@ -42,7 +42,6 @@ int main(int argc, char **argv)
         n = (unsigned int)atoi(argv[1]);
         iter = (unsigned int)atoi(argv[2]);
         a = (int *)malloc(sizeof(int)*(n*n));
-
         if(a == NULL) {
             printf("Malloc failed .. Exiting\n");
             exit(-1);

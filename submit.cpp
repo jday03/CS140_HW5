@@ -27,17 +27,17 @@ void genlife(int *a, unsigned int n)
 {
     int nSquaredDivCoarseness = n*n/ COARSENESS;
     std::cout << "test thing is " << n << std::endl;
+
     cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
         for(int count2 = 0; count2 < COARSENESS; ++count2 ){
 
-            for (int yCount = 0; yCount < n ; yCount ++) {
 
-                 a[n * ((count * COARSENESS) + count2) + yCount] = rand()%2;
-                std::cout << "abd" << a[n * ((count * COARSENESS) + count2) + yCount] << std::endl;
-            }
+                a[n * ((count * COARSENESS) + count2)] = rand() % 2;
+
         }
 
     }
+    std::cout<< "genLifeDone";
 
 }
 
@@ -95,20 +95,17 @@ livecount = new int [10];
         newA = updateNeighborsArray(neighbors, n);
         delete a;
 
-        if(iterCount % (iter / 10)-1 == 0 && iterCount != 0 ){
-            livecount[spotInLiveCount]= countLiving(a);
-            ++spotInLiveCount;
-        }
 
 
-/*
+
+
         #if DEBUG == 1
         if(iterCount % (iter / 10)-1 == 0 && iterCount != 0 ){
            livecount[spotInLiveCount]= countLiving(a);
             ++spotInLiveCount;
         }
-        #ENDIF
-*/
+        #endif
+
     }
     // You need to store the total number of livecounts for every 1/0th of the total iterations into the livecount array.
 	// For example, if there are 50 iterations in your code, you need to store the livecount for iteration number 5 10 15
