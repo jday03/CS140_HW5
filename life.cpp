@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     }
 
     //Debug array
-    livecount = (int *)malloc(sizeof(int)*n);
+    livecount = (int *)malloc(sizeof(int)*10);
 
     //Initialize livecount array
 #if DEBUG == 1

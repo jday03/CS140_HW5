@@ -26,18 +26,15 @@ int countLiving(int* array);
 void genlife(int *a, unsigned int n)
 {
     int nSquaredDivCoarseness = n*n/ COARSENESS;
-    std::cout << "test thing is " << n << std::endl;
 
     cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
         for(int count2 = 0; count2 < COARSENESS; ++count2 ){
 
-                std::cout << count * COARSENESS + count2 << std::endl;
              a[((count * COARSENESS) + count2)] = rand() % 2;
 
         }
 
     }
-    std::cout<< "genLifeDone";
 
 }
 
@@ -79,28 +76,24 @@ livecount = new int [10];
                 (neighbors[((count * COARSENESS) + count2) ]).set_value(0);
             }
         }
-/*
+
         cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
             for (int count2 = 0; count2 < COARSENESS; ++count2) {
 
-                for (int yCount = 0; yCount < n; yCount++) {
+                updateNeighborsAlive(neighbors, (count * COARSENESS) + count2/n,count2%n , n);
 
-                    if ((a[n * ((count * COARSENESS) + count2) + yCount]) == 1) {
-                        updateNeighborsAlive(neighbors, (count * COARSENESS) + count2, yCount, n);
-                    }
-                }
             }
         }
         int * newA;
-        newA = updateNeighborsArray(neighbors, n);
-        delete a;
+       newA = updateNeighborsArray(neighbors, n);
+       // delete a;
 
 
 
 
-*/
+
         #if DEBUG == 1
-        if(iterCount % (iter / 10)-1 == 0 && iterCount != 0 ){
+        if(iterCount % (iter / 10) == 0 && iterCount != 0 ){
            livecount[spotInLiveCount]= countLiving(a);
             ++spotInLiveCount;
         }
@@ -131,7 +124,8 @@ livecount = new int [10];
 }
 int countLiving(int array[]){
     int aliveCount = 0;
-    int n = sizeof(array)/ sizeof(int);
+    int n = sizeof(array)/ sizeof(array[0]);
+    std::cout<< n;
     for(int count =0; count < n*n; ++count){
         if(array[count] == 1){
             aliveCount +=1;
@@ -207,31 +201,30 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
     int nDivCoarseness = n/COARSENESS;
     int* value;
     value = new int [n*n];
-    int * ptr;
+    int cellVal;
 
     cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
         for(int count2 = 0; count2 < COARSENESS; ++count2 ){
 
-            for (int yCount = 0; yCount < n ; yCount ++) {
 
-                *ptr = neighbors[n * ((count * COARSENESS) + count2) + yCount].get_value();
-                if (*ptr >= OCCUPIED_VALUE){
-                    *value -= OCCUPIED_VALUE;
+            cellVal = neighbors[((count * COARSENESS) + count2) ].get_value();
+                if (cellVal >= OCCUPIED_VALUE){
+                    cellVal -= OCCUPIED_VALUE;
 
-                    if( *ptr ==2 || *value == 3){
-                        *value = 1;
+                    if( cellVal ==2 || cellVal == 3){
+                        *(value + ((count * COARSENESS) + count2)) = 1;
                     }
-                    else if(*ptr > 3 || *value < 2){
-                        *value = 0;
+                    else if(cellVal > 3 || cellVal< 2){
+                        *(value + ((count * COARSENESS) + count2)) = 0;
 
                     }
 
                 } else{
-                    if (*ptr == 3){
-                        *value = 1;
+                    if (cellVal == 3){
+                        *(value + ((count * COARSENESS) + count2)) = 1;
 
                 } else {
-                        *value = 0;
+                        *(value + ((count * COARSENESS) + count2)) = 0;
                     }
 
                 }
@@ -239,6 +232,6 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
             }
 
         }
-    }
-
 }
+
+
