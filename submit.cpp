@@ -31,8 +31,8 @@ void genlife(int *a, unsigned int n)
     cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
         for(int count2 = 0; count2 < COARSENESS; ++count2 ){
 
-
-                a[n * ((count * COARSENESS) + count2)] = rand() % 2;
+                std::cout << count * COARSENESS + count2 << std::endl;
+                a[((count * COARSENESS) + count2)] = rand() % 2;
 
         }
 
