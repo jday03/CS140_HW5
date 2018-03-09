@@ -4,6 +4,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<numeric>
+#include <ctime>
+#include "example_util_gettime.h"
+
 
 int cellValue(int i, int j, int size, int * arr);
 int numNeighbors(int i, int j, int size, int * arr);

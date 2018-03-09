@@ -8,6 +8,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
+    long t1, t2;
     unsigned int n;
     unsigned int iter;
     int *a;
@@ -21,6 +22,8 @@ int main(int argc, char **argv)
         printf("Usage : ./life [r] <matrix size> <number of iterations>\n");
         exit(-1);
     }
+    srand(time(NULL));
+    t1 = example_get_time();
 
     // Read from file
     if(argv[1][0] == 'r')
@@ -73,7 +76,8 @@ int main(int argc, char **argv)
 
 
 #endif
-
+    t2 = example_get_time();
+    cout << "Standard library function time: " << t2 - t1 << endl;
     return 0;
 
 }
