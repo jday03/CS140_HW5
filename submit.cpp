@@ -12,7 +12,7 @@
 //Generate the life matrix any way you want. We would highly recommend that you print the generated
 //matrix into a file, so that you can share it with other teams for checking correctness.
 
-static int COARSENESS = 5;
+static int COARSENESS = 2;
 static const int OCCUPIED_VALUE = 10;
 
 void updateNeighborsAlive(cilk::reducer< cilk::op_add<int> > neighbors[], int x, int y, int n);
@@ -27,39 +27,40 @@ void printGrid(cilk::reducer< cilk::op_add<int> >  a [], int n);
 
 void genlife(int *a, unsigned int n)
 {
-    int nSquaredDivCoarseness = n*n/ COARSENESS;
 
-    cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
-        for(int count2 = 0; count2 < COARSENESS; ++count2 ){
-
-             a[((count * COARSENESS) + count2)] = rand() % 2;
-
-        }
-
+    cilk_for(int count = 0; count < n/COARSENESS; ++count){
+        for (int xCount = count * COARSENESS; xCount < (count + 1) * COARSENESS; ++xCount)
+            for (int yCount = 0; yCount < n; ++yCount) {
+                a[xCount * n + yCount] = rand() % 2;
+            }
     }
+
+
+
+
 
 }
 
 //Read the life matrix from a file
 
-void readlife(int *a, unsigned int n, char *filename)
-{
-    FILE * pFile;
-    pFile = fopen (filename,"r");
+void readlife(int *a, unsigned int n, char *filename) {
+    FILE *pFile;
+    pFile = fopen(filename, "r");
 
     int nextItem = 0;
 
-for (int outerCounter = 0; outerCounter < n; ++outerCounter) {
-    for (int innerCounter = 0; innerCounter < n; ++innerCounter) {
-        fscanf(pFile, "%i", &nextItem);
-        a[innerCounter * n +outerCounter] = nextItem;
+    for(int count = 0; count < n/COARSENESS; ++count){
+        for (int xCount = count * COARSENESS; xCount < (count + 1) * COARSENESS; ++xCount)
+            for (int yCount = 0; yCount < n; ++yCount) {
+                fscanf(pFile, "%i", &nextItem);
+                a[xCount * n + yCount] = nextItem;
+            }
     }
 }
 
 
 
 
-}
 
 //Life function
 void life(int *a, unsigned int n, unsigned int iter, int *livecount) {
@@ -67,17 +68,17 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount) {
 
     int nSquaredDivCoarseness = n * n / COARSENESS;
     int nDivCoarseness = n / COARSENESS;
-    livecount = new int[10];
-    int spotInLiveCount = 0;
+
+    int spotInLiveCount = 1;
     int *newA;
     for (int iterCount = 0; iterCount < iter; ++iterCount) {
-        cilk::reducer <cilk::op_add<int>> neighbors[n * n];
+        cilk::reducer <cilk::op_add <int> > neighbors[n * n];
         //setting neighbors array to Zero and copying over newA to a.
 
-        cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
+        cilk_for(int count = 0; count < nDivCoarseness; ++count){
             for (int xCount = count * COARSENESS; xCount < (count + 1) * COARSENESS; ++xCount)
-                for (int yCount2 = 0; yCount2 < n; ++yCount2) {
-                    (neighbors[xCount * n + yCount2]).set_value(0);
+                for (int yCount = 0; yCount < n; ++yCount) {
+                    (neighbors[xCount * n + yCount]).set_value(0);
 
 
                 }
@@ -86,15 +87,9 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount) {
         delete[] newA;
         int *newA;
 
-        cilk_for(int
-        count = 0;
-        count < nSquaredDivCoarseness;
-        ++count){
+        cilk_for(int count = 0; count < nDivCoarseness; ++count){
             for (int xCount = count * COARSENESS; xCount < (count + 1) * COARSENESS; ++xCount)
                 for (int yCount = 0; yCount < n; ++yCount) {
-
-
-                    std::cout << "Testing cell : (" << (xCount) << " , " << yCount << " ) " << std::endl;
 
                     if (a[xCount * n + yCount] == 1) {
 
@@ -106,12 +101,8 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount) {
         // delete a;
 
         printGrid(a, n);
-        printGrid(neighbors, n);
-
-        cilk_for(int
-        count = 0;
-        count < nSquaredDivCoarseness;
-        ++count){
+        printGrid(neighbors,n);
+        cilk_for(int count = 0; count < nDivCoarseness; ++count){
             for (int xCount = count * COARSENESS; xCount < (count + 1) * COARSENESS; ++xCount)
                 for (int yCount = 0; yCount < n; ++yCount) {
                     a[xCount * n + yCount] = newA[xCount * n + yCount];
@@ -119,23 +110,22 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount) {
         }
 
 
-       /* #if DEBUG == 1
-        std::cout << "VALUE IS " << a[0] << std::endl;
-        if(iterCount <= 10 && spotInLiveCount < 10){
-        livecount[spotInLiveCount]= countlive(a,n);
-           ++spotInLiveCount;
-        } else{
-        if(iterCount != 0){
-       if(iterCount % (iter / 10) - 1 <= 0){
-         livecount[spotInLiveCount]= countlive(a,n);
-           ++spotInLiveCount;
-           std::cout << "ITERCOUNT IS " << iterCount << std::endl;
-       }
-       }
-       }
-       #endif */
+        #if DEBUG == 1
+
+        if((iterCount == spotInLiveCount * iter/10 - 1 )||iter <= 10){
+           int summation= countlive(a,n);
+           std::cout << "SUMMATION IS: " << summation << std::endl;
+           livecount[spotInLiveCount - 1] = summation;
+            std::cout << "ITERCOUNT = " << iterCount << "... count is: livecount[" << spotInLiveCount << "] = " << livecount[spotInLiveCount -1]<<std::endl;
+            ++spotInLiveCount;
+
+        }
+
+
+       #endif
 
     }
+
 }
     // You need to store the total number of livecounts for every 1/0th of the total iterations into the livecount array.
 	// For example, if there are 50 iterations in your code, you need to store the livecount for iteration number 5 10 15
@@ -259,7 +249,7 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
     value = new int [n*n];
     int cellVal;
 
-    cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
+    cilk_for(int count = 0; count < nDivCoarseness; ++count){
         for(int xCount = count * COARSENESS; xCount < (count +1) * COARSENESS; ++ xCount)
             for (int yCount = 0; yCount < n; ++yCount) {
 
@@ -267,13 +257,12 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
 
             cellVal = neighbors[xCount *n + yCount].get_value();
                 if (cellVal >= OCCUPIED_VALUE){
-                    cellVal -= OCCUPIED_VALUE;
 
-                    if( cellVal ==2 || cellVal == 3){
+                    if( cellVal ==12 || cellVal == 13){
                         value[xCount *n + yCount] = 1;
                         //*(value + ((count * COARSENESS) + count2)) = 1;
                     }
-                    else if(cellVal > 3 || cellVal< 2){
+                    else if(cellVal > 13 || cellVal< 12){
                         //*(value + ((count * COARSENESS) + count2)) = 0;
                         value[xCount *n + yCount] = 0;
 

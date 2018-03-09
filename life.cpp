@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     }
 
     //Debug array
-    livecount = (int *)malloc(sizeof(int)*10);
+    livecount = (int *)malloc(sizeof(int)*n);
 
     //Initialize livecount array
 #if DEBUG == 1
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 			livecount[i] = 0;
 #endif
 
-    life(a,n,iter,livecount);
+   life(a,n,iter,livecount);
 
     // Print the livecount array
 #if DEBUG == 1
