@@ -12,7 +12,7 @@
 //Generate the life matrix any way you want. We would highly recommend that you print the generated
 //matrix into a file, so that you can share it with other teams for checking correctness.
 
-static int COARSENESS = 2;
+static int COARSENESS = 5000;
 static const int OCCUPIED_VALUE = 10;
 
 void updateNeighborsAlive(cilk::reducer< cilk::op_add<int> > neighbors[], int x, int y, int n);
