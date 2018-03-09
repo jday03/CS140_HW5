@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 
 
 #endif
-    cout << "Standard library function time: " << t2 - t1 << endl;
+    cout << n <<"," << t2 - t1 << endl;
     return 0;
 
 }
