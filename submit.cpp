@@ -71,6 +71,8 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount) {
 
     int spotInLiveCount = 1;
     int *newA;
+    printGrid(a, n);
+
     for (int iterCount = 0; iterCount < iter; ++iterCount) {
         cilk::reducer <cilk::op_add <int> > neighbors[n * n];
         //setting neighbors array to Zero and copying over newA to a.
@@ -100,8 +102,6 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount) {
         newA = updateNeighborsArray(neighbors, n);
         // delete a;
 
-        printGrid(a, n);
-        printGrid(neighbors,n);
         cilk_for(int count = 0; count < nDivCoarseness; ++count){
             for (int xCount = count * COARSENESS; xCount < (count + 1) * COARSENESS; ++xCount)
                 for (int yCount = 0; yCount < n; ++yCount) {
@@ -114,15 +114,17 @@ void life(int *a, unsigned int n, unsigned int iter, int *livecount) {
 
         if((iterCount == spotInLiveCount * iter/10 - 1 )||iter <= 10){
            int summation= countlive(a,n);
-           std::cout << "SUMMATION IS: " << summation << std::endl;
+          // std::cout << "SUMMATION IS: " << summation << std::endl;
            livecount[spotInLiveCount - 1] = summation;
-            std::cout << "ITERCOUNT = " << iterCount << "... count is: livecount[" << spotInLiveCount << "] = " << livecount[spotInLiveCount -1]<<std::endl;
+            //std::cout << "ITERCOUNT = " << iterCount << "... count is: livecount[" << spotInLiveCount << "] = " << livecount[spotInLiveCount -1]<<std::endl;
             ++spotInLiveCount;
 
         }
 
 
        #endif
+
+        printGrid(a, n);
 
     }
 
@@ -242,39 +244,37 @@ void addToCell(cilk::reducer< cilk::op_add<int> > a[], int x, int y, int n, int 
 
 
 
-int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n){
-    int nSquaredDivCoarseness = n*n/COARSENESS;
-    int nDivCoarseness = n/COARSENESS;
-    int* value;
-    value = new int [n*n];
-    int cellVal;
-
+int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n) {
+    int nSquaredDivCoarseness = n * n / COARSENESS;
+    int nDivCoarseness = n / COARSENESS;
+    int *value;
+    value = new int[n * n];
+    printGrid(neighbors, n);
     cilk_for(int count = 0; count < nDivCoarseness; ++count){
-        for(int xCount = count * COARSENESS; xCount < (count +1) * COARSENESS; ++ xCount)
+        int cellVal = 0;
+        for (int xCount = count * COARSENESS; xCount < (count + 1) * COARSENESS; ++xCount) {
             for (int yCount = 0; yCount < n; ++yCount) {
 
 
+                cellVal = neighbors[xCount * n + yCount].get_value();
+                if (cellVal >= OCCUPIED_VALUE) {
 
-            cellVal = neighbors[xCount *n + yCount].get_value();
-                if (cellVal >= OCCUPIED_VALUE){
-
-                    if( cellVal ==12 || cellVal == 13){
-                        value[xCount *n + yCount] = 1;
+                    if (cellVal == 12 || cellVal == 13) {
+                        value[xCount * n + yCount] = 1;
                         //*(value + ((count * COARSENESS) + count2)) = 1;
-                    }
-                    else if(cellVal > 13 || cellVal< 12){
+                    } else if (cellVal > 13 || cellVal < 12) {
                         //*(value + ((count * COARSENESS) + count2)) = 0;
-                        value[xCount *n + yCount] = 0;
+                        value[xCount * n + yCount] = 0;
 
                     }
 
-                } else{
-                    if (cellVal == 3){
+                } else {
+                    if (cellVal == 3) {
                         //*(value + ((count * COARSENESS) + count2)) = 1;
-                        value[xCount *n + yCount] = 1;
+                        value[xCount * n + yCount] = 1;
 
                     } else {
-                        value[xCount *n + yCount] = 0;
+                        value[xCount * n + yCount] = 0;
 
                         //*(value + ((count * COARSENESS) + count2)) = 0;
                     }
@@ -284,9 +284,11 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
             }
 
         }
-    return value;
+        std::cout << "VALUE GRID:" << std::endl;
+        printGrid(value, n);
+        return value;
+    }
 }
-
 
 void printGrid(int* a, int n){
 std::cout << "RESULT ARRAY: " << std::endl;
