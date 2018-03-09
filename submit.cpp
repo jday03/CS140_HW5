@@ -20,6 +20,8 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
 void addToCell(cilk::reducer< cilk::op_add<int> > a[], int x, int y, int n, int val);
 void setCell(cilk::reducer< cilk::op_add<int> > a[], int x, int y, int n, int val);
 cilk::reducer< cilk::op_add<int> >* getCellPtr(cilk::reducer< cilk::op_add<int> > a[],int x, int y, int n);
+void printGrid(int* a, int n);
+int countAlive(int *a, unsigned int n);
 
 
 void genlife(int *a, unsigned int n)
@@ -61,41 +63,62 @@ for (int outerCounter = 0; outerCounter < n; ++outerCounter) {
 //Life function
 void life(int *a, unsigned int n, unsigned int iter, int *livecount)
 {
-    int * newA = a;
+
+
+
     int nSquaredDivCoarseness = n*n/COARSENESS;
 
 livecount = new int [10];
     int spotInLiveCount = 0;
-
+    int * newA;
     for(int iterCount = 0; iterCount < iter; ++iterCount) {
         cilk::reducer< cilk::op_add<int> > neighbors[n*n];
-        //setting neighbors array to Zero.
+        //setting neighbors array to Zero and copying over newA to a.
+
         cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
             for (int count2 = 0; count2 < COARSENESS; ++count2) {
                 (neighbors[((count * COARSENESS) + count2) ]).set_value(0);
+
+
             }
         }
 
+        delete [] newA;
+        int * newA;
+
         cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
             for (int count2 = 0; count2 < COARSENESS; ++count2) {
-                if(newA[((count * COARSENESS) + count2) ] == 1) {
+                if(a[((count * COARSENESS) + count2) ] == 1) {
+                    if(count2 == 0){
+                        updateNeighborsAlive(neighbors, (count * COARSENESS) , count2, n);
+
+                    }
                     updateNeighborsAlive(neighbors, (count * COARSENESS) + count2 / n, count2 % n, n);
                 }
             }
         }
-
        newA = updateNeighborsArray(neighbors, n);
        // delete a;
 
 
+        cilk_for(int count = 0; count < nSquaredDivCoarseness; ++count){
+            for (int count2 = 0; count2 < COARSENESS; ++count2) {
+                    a [count * COARSENESS + count2] = newA [count * COARSENESS + count2];
 
+            }
+        }
+        printGrid(a,n);
 
 
         #if DEBUG == 1
-        if(iterCount % (iter / 10) == 0 && iterCount != 0 && spotInLiveCount < 10){
-           livecount[spotInLiveCount]= countlive(newA,n);
-            ++spotInLiveCount;
-        }
+        std::cout << "VALUE IS " << a[0] << std::endl;
+
+        if(iterCount != 0){
+       if(iterCount % (iter / 10) - 1 <= 0){
+         livecount[spotInLiveCount]= countlive(a,n);
+           ++spotInLiveCount;
+       }
+       }
         #endif
 
     }
@@ -147,13 +170,30 @@ return aliveCount.get_value();
 }
 */
 
+
+
+int countAlive(int *a, unsigned int n)
+{
+    int sum = 0;
+    for(int i = 0; i < n*n; i++)
+    {
+        sum += *(a+n);
+    }
+
+    return sum;
+}
+
+
+
+
+
 void updateNeighborsAlive(cilk::reducer< cilk::op_add<int> > neighbors[], int x, int y, int n){
 
     // Diagonal cases
     addToCell(neighbors,x+1,y+1,n,1);
     addToCell(neighbors,x+1,y-1,n,1);
     addToCell(neighbors,x-1,y+1,n,1);
-    addToCell(neighbors,x-1,y+1,n,1);
+    addToCell(neighbors,x-1,y-1,n,1);
 
     // Middle spots
     addToCell(neighbors,x+1,y,n,1);
@@ -168,20 +208,9 @@ void updateNeighborsAlive(cilk::reducer< cilk::op_add<int> > neighbors[], int x,
 
 
 
-void setCell(cilk::reducer< cilk::op_add<int> > a[], int x, int y, int n, int val){
-    cilk::reducer< cilk::op_add<int> > * ptr = getCellPtr(a,x,y,n);
-    ptr->set_value(val);
-}
-
 
 void addToCell(cilk::reducer< cilk::op_add<int> > a[], int x, int y, int n, int val){
-    cilk::reducer< cilk::op_add<int> > *ptr = getCellPtr(a,x,y,n);
-    ptr += val;
-}
 
-
-
-cilk::reducer< cilk::op_add<int> >* getCellPtr(cilk::reducer< cilk::op_add<int> > a[],int x, int y, int n){
     if(x < 0){
         x = n-1;
     }
@@ -196,13 +225,14 @@ cilk::reducer< cilk::op_add<int> >* getCellPtr(cilk::reducer< cilk::op_add<int> 
         y = 0;
     }
 
-    cilk::reducer< cilk::op_add<int> > * ptr;
-    ptr = &a[x*n + y];
+    *(a[x*n + y]) +=val;
 
-
-    return ptr;
 
 }
+
+
+
+
 
 
 
@@ -222,19 +252,24 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
                     cellVal -= OCCUPIED_VALUE;
 
                     if( cellVal ==2 || cellVal == 3){
-                        *(value + ((count * COARSENESS) + count2)) = 1;
+                        value[count*COARSENESS + count2] = 1;
+                        //*(value + ((count * COARSENESS) + count2)) = 1;
                     }
                     else if(cellVal > 3 || cellVal< 2){
-                        *(value + ((count * COARSENESS) + count2)) = 0;
+                        //*(value + ((count * COARSENESS) + count2)) = 0;
+                        value[count*COARSENESS + count2] = 0;
 
                     }
 
                 } else{
                     if (cellVal == 3){
-                        *(value + ((count * COARSENESS) + count2)) = 1;
+                        //*(value + ((count * COARSENESS) + count2)) = 1;
+                        value[count*COARSENESS + count2] = 1;
 
-                } else {
-                        *(value + ((count * COARSENESS) + count2)) = 0;
+                    } else {
+                        value[count*COARSENESS + count2] = 0;
+
+                        //*(value + ((count * COARSENESS) + count2)) = 0;
                     }
 
                 }
@@ -242,6 +277,19 @@ int* updateNeighborsArray(cilk::reducer< cilk::op_add<int> >  neighbors[], int n
             }
 
         }
+    return value;
+}
+
+
+void printGrid(int* a, int n){
+
+    for(int count1 = 0; count1 < n; ++count1){
+        for(int count2 = 0; count2 < n; ++count2){
+           std::cout<< " " << a[count1* n + count2] << " ";
+        }
+        std::cout<< std::endl;
+    }
+    std::cout<< "---" << std::endl;
 }
 
 
